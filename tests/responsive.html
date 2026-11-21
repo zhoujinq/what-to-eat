@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>外卖吃啥 · 响应式验收</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 16px; background: #202721; color: #F6F1E7; font: 13px/1.5 sans-serif; }
+    #status { margin: 0 0 12px; }
+    #viewport { position: relative; overflow: hidden; border: 1px solid #687068; }
+    iframe { position: absolute; inset: 0; border: 0; transform-origin: left top; background: #F6F1E7; }
+  </style>
+</head>
+<body>
+  <p id="status">正在验收…</p>
+  <div id="viewport"><iframe id="frame" src="../index.html" title="被测页面"></iframe></div>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const width = Number(params.get('w')) || 1280;
+    const height = Number(params.get('h')) || 900;
+    const scale = Number(params.get('scale')) || 0.5;
+    const frame = document.getElementById('frame');
+    const viewport = document.getElementById('viewport');
+    const status = document.getElementById('status');
+    viewport.style.width = `${width * scale}px`;
+    viewport.style.height = `${height * scale}px`;
+    frame.style.width = `${width}px`;
+    frame.style.height = `${height}px`;
+    frame.style.transform = `scale(${scale})`;
+    frame.addEventListener('load', () => {
+      const doc = frame.contentDocument;
+      const win = frame.contentWindow;
+      const clientWidth = doc.documentElement.clientWidth;
+      const overflow = doc.documentElement.scrollWidth > clientWidth;
+      const offenders = [...doc.body.querySelectorAll('*')].filter(element => {
+        const rect = element.getBoundingClientRect();
+        return rect.right > clientWidth + 0.5 || rect.left < -0.5;
+      }).slice(0, 6).map(element => `${element.tagName}.${element.className || element.id}@${Math.round(element.getBoundingClientRect().left)}–${Math.round(element.getBoundingClientRect().right)}`);
+      status.textContent = `视口 ${win.innerWidth} × ${win.innerHeight} · 客户区 ${clientWidth} · 内容宽 ${doc.documentElement.scrollWidth} · ${overflow ? '存在横向溢出' : '无横向溢出'} · ${doc.querySelectorAll('#wheel path, #wheel circle').length} 个转盘图形${overflow && offenders.length ? ` · 越界 ${offenders.join(' / ')}` : ''}`;
+      status.dataset.overflow = String(overflow);
+    });
+  </script>
+</body>
+</html>
