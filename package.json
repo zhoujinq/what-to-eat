@@ -1,0 +1,11 @@
+{
+  "name": "what-to-eat",
+  "version": "0.1.0",
+  "private": false,
+  "description": "外卖吃啥：免登录、无放回随机袋驱动的外卖决策小工具",
+  "scripts": {
+    "test": "node --test tests/app.test.js",
+    "serve": "python -m http.server 4173"
+  },
+  "license": "UNLICENSED"
+}
